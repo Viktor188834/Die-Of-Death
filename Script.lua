@@ -15,21 +15,21 @@ local Use_Ability = {}
 
 for i,v in Abilities do
 	if v.IsSurvivorAbility == true then
-		To_Abilities_Use1[i] = {v.Name, function()
+		table.insert(To_Abilities_Use1, {v.Name, function()
 			Ability_Use1 = v.Name
-		end}
-		To_Abilities_Use2[i] = {v.Name, function()
+		end})
+		table.insert(To_Abilities_Use2, {v.Name, function()
 			Ability_Use2 = v.Name
-		end}
-		To_Abilities_Use3[i] = {v.Name, function()
+		end})
+		table.insert(To_Abilities_Use3, {v.Name, function()
 			Ability_Use3 = v.Name
-		end}
-		To_Abilities_Use4[i] = {v.Name, function()
+		end})
+		table.insert(To_Abilities_Use4, {v.Name, function()
 			Ability_Use4 = v.Name
-		end}
-		Use_Ability[i] = {v.Name, function()
+		end})
+		table.insert(Use_Ability, {v.Name, function()
 			game:GetService("ReplicatedStorage").Events.RemoteFunctions.UseAbility:InvokeServer(v.Name)
-		end}
+		end})
 	end
 end
 
@@ -100,6 +100,10 @@ end)
 
 Dead_By_Death:AddSliderButton(10, 55, "SprintSpeed", function(value)
 	char:SetAttribute("SprintSpeed", value)
+end)
+
+Dead_By_Death:AddClickButton("KillerIntro", function()
+	plr.PlayerGui.MainGui.KillerIntro.Visible = false
 end)
 
 local t1 = Dead_By_Death:Text("Ability 1: "..Ability_Use1)
