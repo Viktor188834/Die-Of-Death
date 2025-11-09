@@ -150,6 +150,71 @@ end)
 local Something_Players = Guis:AddSection("Players")
 local target_player = nil
 
+Something_Players:AddClickButton("hp Everyone", function()
+	local TextColorStorage = {
+		{100, Color3.fromRGB(0, 255, 0)},
+		{50, Color3.fromRGB(255, 251, 0)},
+		{25, Color3.fromRGB(200, 100, 0)},
+		{15, Color3.fromRGB(255, 19, 0)},
+		{5, Color3.fromRGB(255, 15, 15)},
+		{1, Color3.fromRGB(0, 0, 0)}
+	}
+
+	function HealthStandUp(Model: Model)
+		if Model:FindFirstChild("Health") then
+			Model:FindFirstChild("Health"):Destroy()
+		end
+		local Billboard = Instance.new("BillboardGui")
+		local TextLabel = Instance.new("TextLabel")
+		local DiedImage = Instance.new("ImageLabel")
+		local Humanoid = Model:WaitForChild("Humanoid")
+		Billboard.Parent = Model
+		Billboard.Name = "Health"
+		Billboard.Size = UDim2.new(3, 0, 1, 0)
+		Billboard.Adornee = Model
+		Billboard.AlwaysOnTop = true
+		Billboard.ResetOnSpawn = false
+		TextLabel.Parent = Billboard
+		TextLabel.Size = UDim2.new(1, 0, 1, 0)
+		TextLabel.Text = tostring(Humanoid.Health)..".hp"
+		TextLabel.TextStrokeTransparency = 0
+		TextLabel.TextScaled = true
+		TextLabel.TextWrapped = true
+		TextLabel.BackgroundTransparency = 1
+		DiedImage.Size = UDim2.new(0.33, 0, 1, 0)
+		DiedImage.Image = "http://www.roblox.com/asset/?id=87707211255607"
+		DiedImage.Parent = Billboard
+		DiedImage.BackgroundTransparency = 1
+		DiedImage.ImageTransparency = 1
+		DiedImage.Position = UDim2.new(0.33, 0, 0, 0)
+		local function TextLabelChangeColor(health)
+			local Lowest = 100
+			local Color = TextColorStorage[1][2]
+			for i,v in TextColorStorage do
+				if v[1] > health then
+					Lowest = v[1]
+					Color = v[2]
+				end
+			end
+			game:GetService("TweenService"):Create(TextLabel, TweenInfo.new(0.9), {TextColor3 = Color}):Play()
+		end
+		TextLabelChangeColor(100)
+		Humanoid.HealthChanged:Connect(function()
+			local health = Humanoid.Health
+			TextLabel.Text = tostring(health)..".hp"
+			TextLabelChangeColor(health)
+			if health <= 0 and DiedImage.ImageTransparency >= 1 then
+				game:GetService("TweenService"):Create(DiedImage, TweenInfo.new(0.8), {ImageTransparency = 0}):Play()
+				TextLabel.Text = ""
+			end
+		end)
+	end
+
+	for i,plr in game.Players:GetPlayers() do
+		HealthStandUp(plr.Character)
+	end
+end)
+
 Something_Players:AddButtonToSelectPlayer("Choose Player", function(Player)
 	target_player = Player
 end)
