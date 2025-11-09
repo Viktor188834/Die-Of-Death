@@ -93,13 +93,25 @@ Dead_By_Death:AddClickButton("Killer Doors", function()
 		v.CanCollide = false
 	end
 end, "Destroy Killer Doors")
-
+local MaxStamina = 100
+local SprintSpeed = 28
 Dead_By_Death:AddSliderButton(10, 250, "MaxStamina", function(value)
 	char:SetAttribute("MaxStamina", value)
 end)
 
 Dead_By_Death:AddSliderButton(10, 55, "SprintSpeed", function(value)
 	char:SetAttribute("SprintSpeed", value)
+end)
+
+Dead_By_Death:AddSlideButton("Always Set Attribute", function()
+	Ons[2] = true
+	repeat
+		char:SetAttribute("SprintSpeed", SprintSpeed)
+		char:SetAttribute("MaxStamina", MaxStamina)
+		wait()
+	until Ons[2] == false
+end, function()
+	Ons[2] = false
 end)
 
 Dead_By_Death:AddClickButton("KillerIntro", function()
