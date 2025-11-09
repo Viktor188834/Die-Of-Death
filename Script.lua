@@ -148,10 +148,21 @@ game:GetService("RunService").Heartbeat:Connect(function()
 end)
 
 local Something_Players = Guis:AddSection("Players")
+local target_player = nil
 
-Something_Players:AddButtonToSelectPlayer("Highlight", function(Player)
-	local character = Player.Character
+Something_Players:AddButtonToSelectPlayer("Choose Player", function(Player)
+	target_player = Player
+end)
+
+Something_Players:AddClickButton("Highlight", function()
+	if not target_player then return end
+	local character = target_player.Character
 	local Highlight = Instance.new("Highlight")
 	Highlight.Parent = character
 	Highlight.FillTransparency = 1
+end)
+
+Something_Players:AddClickButton("Tp To", function()
+	if not target_player then return end
+	char:WaitForChild("HumanoidRootPart").CFrame = target_player.Character:WaitForChild("HumanoidRootPart").CFrame
 end)
