@@ -12,37 +12,154 @@ local Ability_Use3 = "Revolver"
 local To_Abilities_Use4 = {}
 local Ability_Use4 = "Taunt"
 local Use_Ability = {}
+local plr = game.Players.LocalPlayer
+local char = plr.Character
+local m = plr:GetMouse()
+local M1Active = false
+local MMoved = false
+
+plr.PlayerGui.MainGui.Abilities.Position = UDim2.new(0.248, 0, 0.7, 0)
+if plr.PlayerGui.MainGui:FindFirstChild("ScriptAbiliti's") then
+	plr.PlayerGui.MainGui:FindFirstChild("ScriptAbiliti's"):Destroy()
+end
+if plr.PlayerGui:FindFirstChild("scriptAbilities") then
+	plr.PlayerGui:FindFirstChild("scriptAbilities"):Destroy()
+end
+local Gui = Instance.new("ScreenGui")
+Gui.Parent = plr.PlayerGui
+Gui.Name = "scriptAbilities"
+Gui.ResetOnSpawn = false
+Gui.IgnoreGuiInset = true
+local ScriptAbilities = plr.PlayerGui.MainGui.Abilities:Clone()
+ScriptAbilities.Name = "ScriptAbiliti's"
+ScriptAbilities.Folder.Name = "FolderAbilitiesVisual"
+ScriptAbilities.Tip.Name = "ForUnIdk"
+ScriptAbilities.Parent = Gui
+ScriptAbilities.Position = UDim2.new(0.248, 0, 0.84, 0)
+local AbilitiesFolder = ScriptAbilities:FindFirstChildOfClass("Folder")
+plr.PlayerGui.MainGui.RoundUI.PlayerUI.Position = UDim2.new(-0.04, 0, 0.65, 0)
+
+local Templates = {}
+
+local function FindAbilityInStorage(name: string)
+	for i,v in Abilities do
+		if v.Name and v.Name == name then
+			return v
+		end
+	end
+end
 
 for i,v in Abilities do
 	if v.IsSurvivorAbility == true then
 		table.insert(To_Abilities_Use1, {v.Name, function()
 			Ability_Use1 = v.Name
-		end})
+		end, v})
 		table.insert(To_Abilities_Use2, {v.Name, function()
 			Ability_Use2 = v.Name
-		end})
+		end, v})
 		table.insert(To_Abilities_Use3, {v.Name, function()
 			Ability_Use3 = v.Name
-		end})
+		end, v})
 		table.insert(To_Abilities_Use4, {v.Name, function()
 			Ability_Use4 = v.Name
-		end})
+		end, v})
 		table.insert(Use_Ability, {v.Name, function()
 			game:GetService("ReplicatedStorage").Events.RemoteFunctions.UseAbility:InvokeServer(v.Name)
-		end})
+		end, v})
 	end
+end
+
+local idk1 = {
+	[1] = To_Abilities_Use1,
+	[2] = To_Abilities_Use2,
+	[3] = To_Abilities_Use3,
+	[4] = To_Abilities_Use4,
+}
+local idk2 = {
+	[1] = Enum.KeyCode.Z,
+	[2] = Enum.KeyCode.X,
+	[3] = Enum.KeyCode.C,
+	[4] = Enum.KeyCode.V,
+}
+local idk3 = {
+	[1] = Ability_Use1,
+	[2] = Ability_Use2,
+	[3] = Ability_Use3,
+	[4] = Ability_Use4,
+}
+
+for i,v in AbilitiesFolder:GetChildren() do
+	if not v:IsA("UIListLayout") then
+		v:Destroy()
+	end
+end
+
+local ShootedRevolver = false
+for i=1, 4 do
+	Templates[i] = plr.PlayerGui.MainGui.Client.Modules.Ability.AbilityTemplate:Clone()
+	local temp = Templates[i]
+	temp.Parent = AbilitiesFolder
+	local Info = FindAbilityInStorage(idk3[i])
+	local KeyCode = idk2[i]
+	temp:WaitForChild("Icon").Image = Info.Icon
+	temp.Name = Info.Name
+	temp:WaitForChild("Title").Text = Info.Name
+	temp:WaitForChild("Input").Text = KeyCode.Name
+	temp.BackgroundTransparency = 1
+	local cd = false
+	game:GetService("UserInputService").InputBegan:Connect(function(i, g)
+		if g then return end
+		if i.KeyCode == KeyCode and cd == false then
+			ShootedRevolver = not ShootedRevolver
+			cd = true
+			temp.Cooldown.Visible = true
+			game:GetService("TweenService"):Create(temp.Cooldown, 
+				TweenInfo.new(Info.Cooldown, Enum.EasingStyle.Linear), {Size = UDim2.new(1, 0, 0, 0)}):Play()
+			task.spawn(function()
+				for i=(Info.Cooldown), 1, -1 do
+					temp:WaitForChild("CooldownLabel").Visible = true
+					temp:WaitForChild("CooldownLabel").Text = i.."s"
+					wait(1)
+				end
+				temp:WaitForChild("CooldownLabel").Visible = false
+			end)
+			task.delay(Info.Cooldown, function()
+				temp.Cooldown.Visible = false
+				temp.Cooldown.Size = UDim2.new(1, 0, 1, 0)
+				cd = false
+			end)
+			task.spawn(function()
+				game:GetService("ReplicatedStorage").Events.RemoteFunctions.UseAbility:InvokeServer(idk3[i])
+			end)
+		end
+	end)
+	task.spawn(function()
+		while true do
+			Info = FindAbilityInStorage(idk3[i])
+			wait(0.8)
+			temp.Name = Info.Name
+			temp.Icon.Image = Info.Icon
+			temp.Name = Info.Name
+			temp.Title.Text = Info.Name
+			temp.Input.Text = KeyCode.Name
+			if Info.Name == "Revolver" then
+				temp.Revolver.Visible = true
+				if ShootedRevolver == true then
+					temp.Revolver.Label.Text = "0/1"
+				else
+					temp.Revolver.Label.Text = "1/1"
+				end
+			else
+				temp.Revolver.Visible = false
+			end
+		end
+	end)
 end
 
 local Ons = {}
 for i=1, 999 do
 	Ons[i] = false
 end
-
-local plr = game.Players.LocalPlayer
-local char = plr.Character
-local m = plr:GetMouse()
-local M1Active = false
-local MMoved = false
 
 plr.CharacterAdded:Connect(function(newchar)
 	char = newchar
@@ -124,33 +241,17 @@ local t1 = Dead_By_Death:Text("Ability 1: "..Ability_Use1)
 
 Dead_By_Death:SelectButtons("Ability To Use 1", nil, nil, nil, To_Abilities_Use1)
 
-Dead_By_Death:AddKeybind("Use Ability Keybind 1", function()
-	local v = game:GetService("ReplicatedStorage").Events.RemoteFunctions.UseAbility:InvokeServer(Ability_Use1)
-end, Enum.KeyCode.Z)
-
 local t2 = Dead_By_Death:Text("Ability 2: "..Ability_Use2)
 
 Dead_By_Death:SelectButtons("Ability To Use 2", nil, nil, nil, To_Abilities_Use2)
-
-Dead_By_Death:AddKeybind("Use Ability Keybind 2", function()
-	local v = game:GetService("ReplicatedStorage").Events.RemoteFunctions.UseAbility:InvokeServer(Ability_Use2)
-end, Enum.KeyCode.X)
 
 local t3 = Dead_By_Death:Text("Ability 3: "..Ability_Use3)
 
 Dead_By_Death:SelectButtons("Ability To Use 3", nil, nil, nil, To_Abilities_Use3)
 
-Dead_By_Death:AddKeybind("Use Ability Keybind 3", function()
-	local v = game:GetService("ReplicatedStorage").Events.RemoteFunctions.UseAbility:InvokeServer(Ability_Use3)
-end, Enum.KeyCode.C)
-
 local t4 = Dead_By_Death:Text("Ability 4: "..Ability_Use4)
 
 Dead_By_Death:SelectButtons("Ability To Use 4", nil, nil, nil, To_Abilities_Use4)
-
-Dead_By_Death:AddKeybind("Use Ability Keybind 4", function()
-	local v = game:GetService("ReplicatedStorage").Events.RemoteFunctions.UseAbility:InvokeServer(Ability_Use4)
-end, Enum.KeyCode.V)
 
 Dead_By_Death:SelectButtons("Use Ability", nil, nil, nil, Use_Ability)
 
@@ -159,6 +260,10 @@ game:GetService("RunService").Heartbeat:Connect(function()
 	t2.Text = "Ability 2: "..Ability_Use2
 	t3.Text = "Ability 3: "..Ability_Use3
 	t4.Text = "Ability 4: "..Ability_Use4
+	idk3[1] = Ability_Use1
+	idk3[2] = Ability_Use2
+	idk3[3] = Ability_Use3
+	idk3[4] = Ability_Use4
 end)
 
 local Something_Players = Guis:AddSection("Players")
